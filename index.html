@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <title>Capitulín - Sumas y Restas</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='40' r='25' fill='%23FFD4A3'/><circle cx='44' cy='20' r='12' fill='%234B2E1F'/><circle cx='50' cy='16' r='12' fill='%234B2E1F'/><circle cx='56' cy='20' r='12' fill='%234B2E1F'/><circle cx='42' cy='36' r='3' fill='%23000'/><circle cx='58' cy='36' r='3' fill='%23000'/><path d='M 50 42 Q 50 48 50 48' stroke='%23000' stroke-width='2' fill='none'/><rect x='35' y='52' width='30' height='18' fill='%23FF6347'/><rect x='30' y='54' width='5' height='12' fill='%23FFD700'/><rect x='65' y='54' width='5' height='12' fill='%23FFD700'/><rect x='38' y='70' width='10' height='15' fill='%230066CC'/><rect x='52' y='70' width='10' height='15' fill='%230066CC'/><text x='50' y='10' font-size='20' text-anchor='middle'>👑</text></svg>">
     <style>
         * {
             margin: 0;
@@ -42,9 +43,22 @@
 
         canvas {
             display: block;
-            background: linear-gradient(to bottom, #87CEEB 0%, #98D8E8 70%, #90EE90 100%);
+            background: linear-gradient(to bottom, #87CEEB 0%, #87CEEB 30%, #98D8E8 60%, #90EE90 100%);
             image-rendering: pixelated;
             image-rendering: crisp-edges;
+        }
+
+        @media (max-width: 600px) and (orientation: portrait) {
+            canvas {
+                background: linear-gradient(to bottom, #87CEEB 0%, #87CEEB 20%, #98D8E8 50%, #90EE90 100%);
+            }
+        }
+
+        @media (orientation: landscape) {
+            canvas {
+                max-height: 100vh;
+                max-width: calc(100vh * 1.33);
+            }
         }
 
         #gameInfo {
@@ -76,7 +90,184 @@
         #level { color: #4169E1; }
         #tableMode { color: #9370DB; font-size: 12px; }
 
-        /* Menú */
+        #shopBtn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-weight: bold;
+            font-size: 16px;
+            border: 3px solid #FF8C00;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            z-index: 100;
+            transition: transform 0.2s;
+            color: #fff;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+
+        #shopBtn:hover { transform: scale(1.05); }
+        #shopBtn:active { transform: scale(0.95); }
+        #shopBtn.disabled {
+            background: #ccc;
+            border-color: #999;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        /* Botones de power-ups */
+        #powerUpButtons {
+            position: absolute;
+            top: 70px;
+            right: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            z-index: 100;
+        }
+
+        .powerup-action-btn {
+            background: linear-gradient(135deg, #FF6347, #FF4500);
+            padding: 10px 15px;
+            border-radius: 10px;
+            font-weight: bold;
+            font-size: 14px;
+            border: 3px solid #DC143C;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            transition: transform 0.2s;
+            color: #fff;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+            display: none;
+        }
+
+        .powerup-action-btn.show { display: block; }
+        .powerup-action-btn:hover { transform: scale(1.05); }
+        .powerup-action-btn:active { transform: scale(0.95); }
+
+        #activePowerUps {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+            z-index: 100;
+        }
+
+        .powerup-indicator {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: bold;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            border: 2px solid #FFD700;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .powerup-indicator .icon { font-size: 18px; }
+        .powerup-indicator .time { font-size: 12px; color: #666; }
+
+        #shopMenu {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 50px rgba(0,0,0,0.5);
+            text-align: center;
+            display: none;
+            z-index: 2500;
+            border: 4px solid #FF8C00;
+            max-width: 90vw;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        #shopMenu.show { display: block; }
+
+        #shopMenu h2 {
+            color: white;
+            font-size: 24px;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        #shopMenu p {
+            color: #fff;
+            font-size: 16px;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+
+        .shop-items {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+
+        .shop-item {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 3px solid #FF8C00;
+        }
+
+        .shop-item:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+        }
+
+        .shop-item:active { transform: scale(0.98); }
+        .shop-item.disabled { opacity: 0.5; cursor: not-allowed; }
+        .shop-item-icon { font-size: 40px; margin-bottom: 8px; }
+        .shop-item-name {
+            font-weight: bold;
+            color: #333;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+
+        .shop-item-desc {
+            font-size: 11px;
+            color: #666;
+            margin-bottom: 8px;
+            line-height: 1.3;
+        }
+
+        .shop-item-price {
+            color: #FFD700;
+            font-weight: bold;
+            font-size: 16px;
+            background: #333;
+            padding: 4px 8px;
+            border-radius: 5px;
+            display: inline-block;
+        }
+
+        #closeShopBtn {
+            width: 100%;
+            padding: 12px;
+            font-size: 18px;
+            font-weight: bold;
+            background: #FF6347;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
         #tableMenu {
             position: absolute;
             top: 50%;
@@ -173,7 +364,6 @@
             cursor: not-allowed;
         }
 
-        /* Preguntas */
         #questionBox {
             position: absolute;
             top: 50%;
@@ -225,181 +415,150 @@
         }
 
         #feedback {
-            font-size: 16px;
             margin-top: 10px;
             font-weight: bold;
-            min-height: 25px;
+            font-size: 18px;
         }
 
         .correct { color: #4CAF50; }
         .incorrect { color: #FF6347; }
 
-        /* Chistes */
-        #jokeBox {
+        .controls {
             position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
-            padding: 20px;
-            border-radius: 15px;
-            box-shadow: 0 10px 50px rgba(0,0,0,0.5);
-            display: none;
-            text-align: center;
-            z-index: 1500;
-            border: 4px solid #FF6347;
-            max-width: 90vw;
-            max-height: 80vh;
-        }
-
-        #jokeBox.show { display: block; }
-
-        #jokeBox h2 {
-            color: #FF6347;
-            font-size: 20px;
-            margin-bottom: 15px;
-        }
-
-        #jokeText {
-            font-size: 14px;
-            color: #333;
-            line-height: 1.5;
-            margin-bottom: 15px;
-            text-align: left;
-            max-height: 200px;
-            overflow-y: auto;
-            padding: 15px;
-            background: rgba(255,255,255,0.8);
-            border-radius: 8px;
-        }
-
-        #continueBtn {
-            font-size: 16px;
-            padding: 12px 30px;
-            background: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-
-        /* Game Over */
-        #gameOver {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(0, 0, 0, 0.9);
-            padding: 30px;
-            border-radius: 15px;
-            color: white;
-            text-align: center;
-            display: none;
-            z-index: 1000;
-            max-width: 90vw;
-        }
-
-        #gameOver.show { display: block; }
-
-        #gameOver h2 {
-            font-size: 28px;
-            color: #FFD700;
-            margin-bottom: 15px;
-        }
-
-        #gameOver p {
-            font-size: 18px;
-            margin: 8px 0;
-        }
-
-        #restartBtn {
-            font-size: 18px;
-            padding: 12px 35px;
-            background: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            margin-top: 15px;
-            font-weight: bold;
-        }
-
-        /* Controles */
-        #controls {
-            position: absolute;
-            bottom: 15px;
-            left: 50%;
-            transform: translateX(-50%);
+            bottom: 20px;
+            width: 100%;
             display: flex;
-            gap: 12px;
-            z-index: 100;
+            justify-content: center;
+            gap: 15px;
+            z-index: 50;
         }
 
         .control-btn {
             width: 60px;
             height: 60px;
             background: rgba(255, 255, 255, 0.9);
-            border: 3px solid #333;
-            border-radius: 10px;
+            border: 3px solid #4CAF50;
+            border-radius: 50%;
             font-size: 24px;
-            cursor: pointer;
-            user-select: none;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: bold;
-            transition: all 0.1s;
-            touch-action: none;
+            cursor: pointer;
+            user-select: none;
+            touch-action: manipulation;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
         }
 
         @media (min-width: 600px) {
-            .control-btn {
-                width: 70px;
-                height: 70px;
-            }
+            .control-btn { width: 70px; height: 70px; }
         }
 
-        .control-btn:active {
-            background: rgba(255, 215, 0, 0.9);
-            transform: scale(0.95);
+        #jumpBtn { background: rgba(255, 215, 0, 0.95); }
+
+        #gameOver {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 50px rgba(0,0,0,0.5);
+            text-align: center;
+            display: none;
+            z-index: 3000;
+            border: 4px solid #FFD700;
+            max-width: 90vw;
+        }
+
+        #gameOver.show { display: block; }
+
+        #gameOver h2 {
+            color: white;
+            font-size: 32px;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        #gameOver p {
+            color: #FFD700;
+            font-size: 18px;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+
+        #restartBtn {
+            padding: 15px 30px;
+            font-size: 20px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            margin-top: 20px;
+            font-weight: bold;
         }
 
         #instructions {
             position: absolute;
-            bottom: 100px;
+            bottom: 20px;
             left: 50%;
             transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px 20px;
+            border-radius: 10px;
             text-align: center;
-            color: white;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            font-size: 14px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            z-index: 1500;
+            max-width: 80vw;
+        }
+
+        #instructions.hidden { display: none; }
+        #instructions strong { color: #4CAF50; }
+
+        #jokeBox {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 50px rgba(0,0,0,0.5);
+            display: none;
+            text-align: center;
+            z-index: 1500;
+            border: 4px solid #FFD700;
             max-width: 90vw;
-            font-size: 12px;
-            z-index: 50;
         }
 
-        #instructions h2 {
+        #jokeBox.show { display: block; }
+
+        #jokeText {
             font-size: 16px;
-            margin-bottom: 5px;
+            color: #333;
+            margin-bottom: 20px;
+            line-height: 1.6;
+            white-space: pre-line;
         }
 
-        @media (min-width: 600px) {
-            #instructions {
-                font-size: 14px;
-                bottom: 110px;
-            }
-            #instructions h2 {
-                font-size: 20px;
-            }
+        #continueBtn {
+            padding: 12px 25px;
+            font-size: 18px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
         }
-
-        .hidden { display: none !important; }
     </style>
 </head>
 <body>
     <div id="gameContainer">
         <canvas id="gameCanvas"></canvas>
-        
+
         <div id="gameInfo">
             <div id="score">👑 Coronas: 0</div>
             <div id="lives">❤️ Vidas: 3</div>
@@ -407,103 +566,139 @@
             <div id="tableMode">📚 Modo: -</div>
         </div>
 
+        <button id="shopBtn" class="disabled">🛒 Tienda</button>
+
+        <div id="powerUpButtons">
+            <button id="helmetBtn" class="powerup-action-btn">⛑️ Casco</button>
+            <button id="umbrellaBtn" class="powerup-action-btn">☂️ Paraguas</button>
+            <button id="whistleBtn" class="powerup-action-btn">📢 Silbato</button>
+        </div>
+
+        <div id="activePowerUps"></div>
+
+        <div id="shopMenu">
+            <h2>🛒 Tienda de Power-Ups 🛒</h2>
+            <p id="shopCoins">Coronas disponibles: 0 👑</p>
+            <div class="shop-items">
+                <div class="shop-item" data-powerup="extralife">
+                    <div class="shop-item-icon">❤️</div>
+                    <div class="shop-item-name">Vida Extra</div>
+                    <div class="shop-item-desc">Suma una vida más (efecto inmediato)</div>
+                    <div class="shop-item-price">👑 10</div>
+                </div>
+                <div class="shop-item" data-powerup="helmet">
+                    <div class="shop-item-icon">⛑️</div>
+                    <div class="shop-item-name">Casco Protector</div>
+                    <div class="shop-item-desc">Protege de 3 golpes (activar con botón)</div>
+                    <div class="shop-item-price">👑 10</div>
+                </div>
+                <div class="shop-item" data-powerup="umbrella">
+                    <div class="shop-item-icon">☂️</div>
+                    <div class="shop-item-name">Paraguas Mágico</div>
+                    <div class="shop-item-desc">Rebota monstruos 25s (activar con botón)</div>
+                    <div class="shop-item-price">👑 10</div>
+                </div>
+                <div class="shop-item" data-powerup="whistle">
+                    <div class="shop-item-icon">📢</div>
+                    <div class="shop-item-name">Silbato Antimonstruos</div>
+                    <div class="shop-item-desc">Ahuyenta todo (activar con botón)</div>
+                    <div class="shop-item-price">👑 10</div>
+                </div>
+            </div>
+            <button id="closeShopBtn">Cerrar</button>
+        </div>
+
         <div id="tableMenu">
-            <h2>🎮 ¡Elige tu aventura! 🎮</h2>
-            <p>Operaciones a practicar</p>
-            
+            <h2>🎮 Capitulín Matemático 🎮</h2>
+            <p>Selecciona el tipo de ejercicio:</p>
             <div class="table-buttons">
                 <button class="table-btn" data-mode="suma">➕ Sumas</button>
                 <button class="table-btn" data-mode="resta">➖ Restas</button>
                 <button class="table-btn" data-mode="mixto">🔀 Mixto</button>
             </div>
-
             <div class="difficulty-section">
-                <h3>⭐ Dificultad ⭐</h3>
+                <h3>Dificultad:</h3>
                 <div class="difficulty-buttons">
-                    <button class="difficulty-btn" data-difficulty="facil">Fácil<br>(1-10)</button>
-                    <button class="difficulty-btn" data-difficulty="medio">Medio<br>(1-20)</button>
-                    <button class="difficulty-btn" data-difficulty="dificil">Difícil<br>(1-50)</button>
+                    <button class="difficulty-btn" data-difficulty="facil">😊 Fácil</button>
+                    <button class="difficulty-btn" data-difficulty="medio">😐 Medio</button>
+                    <button class="difficulty-btn" data-difficulty="dificil">😤 Difícil</button>
                 </div>
             </div>
-            
-            <button id="startGameBtn" disabled>🚀 ¡JUGAR!</button>
+            <button id="startGameBtn" disabled>¡Comenzar!</button>
         </div>
 
-        <div id="jokeBox">
-            <h2>🎉 ¡NIVEL COMPLETADO! 🎉</h2>
-            <div id="jokeText"></div>
-            <button id="continueBtn">😄 ¡Continuar!</button>
+        <div id="instructions">
+            <strong>Recoge las coronas 👑</strong> y resuelve las operaciones.<br>
+            <strong>¡Evita los monstruos! 👾</strong> Canjea coronas en la tienda 🛒
         </div>
 
         <div id="questionBox">
             <div id="questionText"></div>
-            <input type="number" id="answerInput" placeholder="?" autocomplete="off">
-            <br><br>
+            <input type="number" id="answerInput" placeholder="?">
+            <br>
             <button id="submitAnswer">Responder</button>
             <div id="feedback"></div>
         </div>
 
+        <div id="jokeBox">
+            <div id="jokeText"></div>
+            <button id="continueBtn">Continuar</button>
+        </div>
+
         <div id="gameOver">
-            <h2>¡Fin del Juego!</h2>
+            <h2>¡Juego Terminado!</h2>
             <p id="finalScore"></p>
             <p id="finalMessage"></p>
             <button id="restartBtn">Jugar de Nuevo</button>
         </div>
 
-        <div id="controls">
-            <button class="control-btn" id="leftBtn">⬅️</button>
-            <button class="control-btn" id="jumpBtn">⬆️</button>
-            <button class="control-btn" id="rightBtn">➡️</button>
+        <div class="controls">
+            <button id="leftBtn" class="control-btn">⬅️</button>
+            <button id="jumpBtn" class="control-btn">⬆️</button>
+            <button id="rightBtn" class="control-btn">➡️</button>
         </div>
-    </div>
-
-    <div id="instructions">
-        <h2>¡Ayuda a Capitulín!</h2>
-        <p>👑 Recoge coronas y responde | 👾 Evita monstruos</p>
     </div>
 
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
 
-        // Variables para escalado
-        let scale = 1;
-        const baseWidth = 800;
-        const baseHeight = 600;
-
-        // Ajustar canvas al tamaño de la pantalla
         function resizeCanvas() {
-            const container = document.getElementById('gameContainer');
-            const containerWidth = window.innerWidth;
-            const containerHeight = window.innerHeight;
+            const isMobile = window.innerWidth <= 600;
+            const isPortrait = window.innerHeight > window.innerWidth;
             
-            // Calcular escala manteniendo aspecto
-            const scaleX = containerWidth / baseWidth;
-            const scaleY = containerHeight / baseHeight;
-            scale = Math.min(scaleX, scaleY) * 0.95;
-            
-            canvas.width = baseWidth;
-            canvas.height = baseHeight;
-            canvas.style.width = (baseWidth * scale) + 'px';
-            canvas.style.height = (baseHeight * scale) + 'px';
+            if (isMobile && isPortrait) {
+                canvas.width = Math.min(window.innerWidth, 800);
+                canvas.height = Math.min(window.innerHeight, 600);
+            } else if (!isPortrait) {
+                const maxHeight = window.innerHeight;
+                canvas.height = maxHeight;
+                canvas.width = Math.min(maxHeight * 1.33, window.innerWidth);
+            } else {
+                canvas.width = Math.min(window.innerWidth, 800);
+                canvas.height = Math.min(window.innerHeight, 600);
+            }
         }
 
+        resizeCanvas();
         window.addEventListener('resize', resizeCanvas);
         window.addEventListener('orientationchange', () => {
             setTimeout(resizeCanvas, 100);
         });
-        resizeCanvas();
 
-        // Chistes
         const jokes = [
-            "- ¡Camarero! He encontrado un pelo en la sopa y no es mío.\n- Esta bien, démelo, lo guardaremos por si vienen a reclamarlo.",
+            "¿Qué hace una abeja en el gimnasio?\n¡Zum-ba!",
+            "¿Cuál es el colmo de un electricista?\nQue su mujer se llame Luz y los hijos le sigan la corriente.",
+            "- ¿Por qué los elefantes no usan computadora?\n- Porque le tienen miedo al ratón.",
+            "- ¿Qué le dice un techo a otro techo?\n- Techo de menos.",
+            "¿Qué le dice un jardinero a otro?\nDisfrutemos mientras podamos.",
+            "- Mamá, en el colegio me llaman despistado.\n- Niño, tu casa es la de enfrente.",
             "- ¿Qué le dice una impresora a otra?\n- ¿Esta hoja es tuya o es impresión mía?",
             "- Mamá, ¿qué haces en frente del ordenador con los ojos cerrados?\n- Nada hijo, es que Windows me ha dicho que cierre las pestañas…",
             "- Doctor, doctor! Mire me toco aquí y me duele... ¿sabe qué es lo que me pasa?\n- Usted tiene el dedo roto.",
             "- ¿Sabes que mi hermano anda en bicicleta desde los cuatro años?\n- Mmm, ya debe estar lejos."
         ];
 
-        // Game state
         let score = 0, lives = 3, level = 1;
         let gameRunning = false, gameStarted = false;
         let currentQuestion = null, isPaused = false;
@@ -511,6 +706,23 @@
 
         let selectedMode = null, selectedDifficulty = null;
         let tableMode = 'none', maxNumber = 10;
+        let usedNumbers = new Set();
+
+        // Inventario de power-ups (comprados pero no activados)
+        let powerUpInventory = {
+            helmet: 0,
+            umbrella: 0,
+            whistle: 0
+        };
+
+        // Power-ups activos
+        let activePowerUps = {
+            helmetHits: 0,
+            umbrellaTime: 0
+        };
+
+        let witch = null;
+        let witchSpawned = false;
 
         const player = {
             x: 50, y: 450, width: 40, height: 50,
@@ -520,6 +732,7 @@
         };
 
         let platforms = [], crowns = [], monsters = [];
+        let monsterSpawnTimer = 0;
         const clouds = [
             { x: 100, y: 80, size: 50 },
             { x: 400, y: 120, size: 60 },
@@ -527,7 +740,6 @@
         ];
         const keys = {};
 
-        // Audio
         const audioContext = new (window.AudioContext || window.webkitAudioContext)();
 
         function playSound(freq, duration = 0.3) {
@@ -558,7 +770,186 @@
             playSound(200, 0.5);
         }
 
-        // Menú
+        function playPowerUpSound() {
+            [440, 554.37, 659.25].forEach((f, i) => {
+                setTimeout(() => playSound(f, 0.2), i * 100);
+            });
+        }
+
+        function playWitchSound() {
+            [800, 600, 500, 400, 350].forEach((f, i) => {
+                setTimeout(() => playSound(f, 0.3), i * 100);
+            });
+        }
+
+        function updateShopButton() {
+            const shopBtn = document.getElementById('shopBtn');
+            if (score >= 10 && gameStarted) {
+                shopBtn.classList.remove('disabled');
+            } else {
+                shopBtn.classList.add('disabled');
+            }
+        }
+
+        function updatePowerUpButtons() {
+            document.getElementById('helmetBtn').classList.toggle('show', powerUpInventory.helmet > 0 && gameStarted);
+            document.getElementById('umbrellaBtn').classList.toggle('show', powerUpInventory.umbrella > 0 && gameStarted);
+            document.getElementById('whistleBtn').classList.toggle('show', powerUpInventory.whistle > 0 && gameStarted);
+        }
+
+        document.getElementById('shopBtn').addEventListener('click', () => {
+            if (score >= 10 && gameStarted && !isPaused) {
+                openShop();
+            }
+        });
+
+        // Botones de activación de power-ups
+        document.getElementById('helmetBtn').addEventListener('click', () => {
+            if (powerUpInventory.helmet > 0 && !isPaused) {
+                powerUpInventory.helmet--;
+                activePowerUps.helmetHits = 3;
+                updatePowerUpButtons();
+                updateActivePowerUps();
+                playPowerUpSound();
+                showNotification('⛑️ Casco Activado');
+            }
+        });
+
+        document.getElementById('umbrellaBtn').addEventListener('click', () => {
+            if (powerUpInventory.umbrella > 0 && !isPaused) {
+                powerUpInventory.umbrella--;
+                activePowerUps.umbrellaTime = 25 * 60;
+                updatePowerUpButtons();
+                updateActivePowerUps();
+                playPowerUpSound();
+                showNotification('☂️ Paraguas Activado');
+            }
+        });
+
+        document.getElementById('whistleBtn').addEventListener('click', () => {
+            if (powerUpInventory.whistle > 0 && !isPaused) {
+                powerUpInventory.whistle--;
+                updatePowerUpButtons();
+                playPowerUpSound();
+                monsters = [];
+                if (witch) witch = null;
+                showNotification('📢 ¡Monstruos ahuyentados!');
+            }
+        });
+
+        function openShop() {
+            isPaused = true;
+            const shopMenu = document.getElementById('shopMenu');
+            document.getElementById('shopCoins').textContent = `Coronas disponibles: ${score} 👑`;
+            
+            document.querySelectorAll('.shop-item').forEach(item => {
+                if (score >= 10) {
+                    item.classList.remove('disabled');
+                } else {
+                    item.classList.add('disabled');
+                }
+            });
+            
+            shopMenu.classList.add('show');
+        }
+
+        document.getElementById('closeShopBtn').addEventListener('click', () => {
+            document.getElementById('shopMenu').classList.remove('show');
+            isPaused = false;
+        });
+
+        document.querySelectorAll('.shop-item').forEach(item => {
+            item.addEventListener('click', () => {
+                if (score >= 10) {
+                    const powerup = item.dataset.powerup;
+                    buyPowerUp(powerup);
+                }
+            });
+        });
+
+        function buyPowerUp(type) {
+            if (score < 10) return;
+            
+            score -= 10;
+            document.getElementById('score').textContent = `👑 Coronas: ${score}`;
+            playPowerUpSound();
+            
+            switch(type) {
+                case 'extralife':
+                    lives++;
+                    document.getElementById('lives').textContent = `❤️ Vidas: ${lives}`;
+                    showNotification('❤️ +1 Vida');
+                    break;
+                case 'helmet':
+                    powerUpInventory.helmet++;
+                    showNotification('⛑️ Casco Comprado');
+                    break;
+                case 'umbrella':
+                    powerUpInventory.umbrella++;
+                    showNotification('☂️ Paraguas Comprado');
+                    break;
+                case 'whistle':
+                    powerUpInventory.whistle++;
+                    showNotification('📢 Silbato Comprado');
+                    break;
+            }
+            
+            updatePowerUpButtons();
+            updateActivePowerUps();
+            document.getElementById('shopMenu').classList.remove('show');
+            isPaused = false;
+            updateShopButton();
+        }
+
+        function showNotification(text) {
+            let alpha = 1;
+            const startTime = Date.now();
+            const duration = 2000;
+            
+            function drawNotif() {
+                const elapsed = Date.now() - startTime;
+                if (elapsed >= duration) return;
+                
+                alpha = 1 - (elapsed / duration);
+                const notifY = canvas.height / 2 - 100;
+                
+                ctx.save();
+                ctx.globalAlpha = alpha;
+                ctx.fillStyle = '#FFD700';
+                ctx.font = 'bold 30px Arial';
+                ctx.textAlign = 'center';
+                ctx.strokeStyle = '#000';
+                ctx.lineWidth = 3;
+                ctx.strokeText(text, canvas.width/2, notifY);
+                ctx.fillText(text, canvas.width/2, notifY);
+                ctx.restore();
+                
+                requestAnimationFrame(drawNotif);
+            }
+            
+            drawNotif();
+        }
+
+        function updateActivePowerUps() {
+            const container = document.getElementById('activePowerUps');
+            container.innerHTML = '';
+            
+            if (activePowerUps.helmetHits > 0) {
+                const div = document.createElement('div');
+                div.className = 'powerup-indicator';
+                div.innerHTML = `<span class="icon">⛑️</span> <span>x${activePowerUps.helmetHits}</span>`;
+                container.appendChild(div);
+            }
+            
+            if (activePowerUps.umbrellaTime > 0) {
+                const div = document.createElement('div');
+                div.className = 'powerup-indicator';
+                const secs = Math.ceil(activePowerUps.umbrellaTime / 60);
+                div.innerHTML = `<span class="icon">☂️</span> <span class="time">${secs}s</span>`;
+                container.appendChild(div);
+            }
+        }
+
         document.querySelectorAll('.table-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 document.querySelectorAll('.table-btn').forEach(b => b.classList.remove('selected'));
@@ -587,12 +978,106 @@
             }
         }
 
+        function generateNumbers() {
+            let num1, num2, operation;
+            
+            if (selectedMode === 'suma') {
+                operation = '+';
+                if (selectedDifficulty === 'facil') {
+                    let attempts = 0;
+                    do {
+                        num1 = Math.floor(Math.random() * 10);
+                        const maxNum2 = Math.min(9, 10 - num1);
+                        num2 = Math.floor(Math.random() * (maxNum2 + 1));
+                        attempts++;
+                        if (attempts > 100) {
+                            usedNumbers.clear();
+                            break;
+                        }
+                    } while (usedNumbers.has(num1) || usedNumbers.has(num2));
+                    
+                    usedNumbers.add(num1);
+                    usedNumbers.add(num2);
+                } else {
+                    num1 = Math.floor(Math.random() * maxNumber) + 1;
+                    num2 = Math.floor(Math.random() * maxNumber) + 1;
+                }
+            } else if (selectedMode === 'resta') {
+                operation = '-';
+                if (selectedDifficulty === 'facil') {
+                    let attempts = 0;
+                    do {
+                        num1 = Math.floor(Math.random() * 10);
+                        num2 = Math.floor(Math.random() * (num1 + 1));
+                        attempts++;
+                        if (attempts > 100) {
+                            usedNumbers.clear();
+                            break;
+                        }
+                    } while (usedNumbers.has(num1) || usedNumbers.has(num2));
+                    
+                    usedNumbers.add(num1);
+                    usedNumbers.add(num2);
+                } else {
+                    num1 = Math.floor(Math.random() * maxNumber) + 1;
+                    num2 = Math.floor(Math.random() * num1) + 1;
+                }
+            } else {
+                operation = Math.random() > 0.5 ? '+' : '-';
+                if (operation === '+') {
+                    if (selectedDifficulty === 'facil') {
+                        let attempts = 0;
+                        do {
+                            num1 = Math.floor(Math.random() * 10);
+                            const maxNum2 = Math.min(9, 10 - num1);
+                            num2 = Math.floor(Math.random() * (maxNum2 + 1));
+                            attempts++;
+                            if (attempts > 100) {
+                                usedNumbers.clear();
+                                break;
+                            }
+                        } while (usedNumbers.has(num1) || usedNumbers.has(num2));
+                        
+                        usedNumbers.add(num1);
+                        usedNumbers.add(num2);
+                    } else {
+                        num1 = Math.floor(Math.random() * maxNumber) + 1;
+                        num2 = Math.floor(Math.random() * maxNumber) + 1;
+                    }
+                } else {
+                    if (selectedDifficulty === 'facil') {
+                        let attempts = 0;
+                        do {
+                            num1 = Math.floor(Math.random() * 10);
+                            num2 = Math.floor(Math.random() * (num1 + 1));
+                            attempts++;
+                            if (attempts > 100) {
+                                usedNumbers.clear();
+                                break;
+                            }
+                        } while (usedNumbers.has(num1) || usedNumbers.has(num2));
+                        
+                        usedNumbers.add(num1);
+                        usedNumbers.add(num2);
+                    } else {
+                        num1 = Math.floor(Math.random() * maxNumber) + 1;
+                        num2 = Math.floor(Math.random() * num1) + 1;
+                    }
+                }
+            }
+            
+            return { num1, num2, operation };
+        }
+
         document.getElementById('startGameBtn').addEventListener('click', () => {
             document.getElementById('tableMenu').classList.add('hidden');
             document.getElementById('instructions').classList.add('hidden');
             document.getElementById('tableMode').textContent = `📚 ${tableMode}`;
             gameStarted = true;
             gameRunning = true;
+            usedNumbers.clear();
+            updateShopButton();
+            updatePowerUpButtons();
             init();
         });
 
@@ -604,29 +1089,84 @@
         function spawnLevel() {
             createLevelLayout();
             spawnCrowns();
-            spawnMonsters();
+            monsters = [];
+            monsterSpawnTimer = 0;
+            witch = null;
+            witchSpawned = false;
         }
 
         function createLevelLayout() {
-            platforms = [{ x: 0, y: 550, width: 800, height: 50 }];
+            platforms = [{ x: 0, y: canvas.height - 50, width: canvas.width, height: 50 }];
             
             const layouts = [
-                [{ x: 150, y: 450, width: 120, height: 20 }, { x: 350, y: 380, width: 120, height: 20 }, { x: 550, y: 450, width: 120, height: 20 }],
-                [{ x: 50, y: 480, width: 100, height: 20 }, { x: 180, y: 420, width: 100, height: 20 }, { x: 310, y: 360, width: 100, height: 20 }, { x: 440, y: 300, width: 100, height: 20 }, { x: 570, y: 240, width: 100, height: 20 }],
-                [{ x: 100, y: 400, width: 80, height: 20 }, { x: 220, y: 320, width: 80, height: 20 }, { x: 340, y: 400, width: 80, height: 20 }, { x: 460, y: 320, width: 80, height: 20 }, { x: 580, y: 400, width: 80, height: 20 }, { x: 360, y: 220, width: 100, height: 20 }]
+                [
+                    { x: canvas.width * 0.2, y: canvas.height - 150, width: 120, height: 20 }, 
+                    { x: canvas.width * 0.45, y: canvas.height - 220, width: 120, height: 20 }, 
+                    { x: canvas.width * 0.7, y: canvas.height - 150, width: 120, height: 20 }
+                ],
+                [
+                    { x: canvas.width * 0.1, y: canvas.height - 120, width: 100, height: 20 }, 
+                    { x: canvas.width * 0.25, y: canvas.height - 180, width: 100, height: 20 }, 
+                    { x: canvas.width * 0.4, y: canvas.height - 240, width: 100, height: 20 }, 
+                    { x: canvas.width * 0.55, y: canvas.height - 300, width: 100, height: 20 }, 
+                    { x: canvas.width * 0.7, y: canvas.height - 360, width: 100, height: 20 }
+                ],
+                [
+                    { x: canvas.width * 0.15, y: canvas.height - 200, width: 80, height: 20 }, 
+                    { x: canvas.width * 0.3, y: canvas.height - 280, width: 80, height: 20 }, 
+                    { x: canvas.width * 0.45, y: canvas.height - 200, width: 80, height: 20 }, 
+                    { x: canvas.width * 0.6, y: canvas.height - 280, width: 80, height: 20 }, 
+                    { x: canvas.width * 0.75, y: canvas.height - 200, width: 80, height: 20 }
+                ]
             ];
             
             if (level <= 3) {
                 platforms.push(...layouts[level - 1]);
             } else {
-                const numPlatforms = 5 + Math.floor(Math.random() * 3);
-                for (let i = 0; i < numPlatforms; i++) {
-                    platforms.push({
-                        x: Math.random() * 650 + 50,
-                        y: Math.random() * 300 + 250,
-                        width: Math.random() * 60 + 60,
-                        height: 20
-                    });
+                // CORREGIDO: Generación mejorada para niveles aleatorios
+                // Garantizar plataformas accesibles con saltos posibles
+                const numPlatforms = 5 + Math.floor(Math.random() * 2);
+                const groundY = canvas.height - 50;
+                const maxJumpHeight = 200; // Altura máxima alcanzable con un salto
+                const minPlatformGap = 80; // Separación mínima horizontal
+                
+                // Empezar con una plataforma baja accesible desde el suelo
+                let lastPlatform = {
+                    x: canvas.width * 0.15,
+                    y: groundY - 100,
+                    width: 100,
+                    height: 20
+                };
+                platforms.push(lastPlatform);
+                
+                // Generar plataformas conectadas
+                for (let i = 1; i < numPlatforms; i++) {
+                    let attempts = 0;
+                    let newPlatform;
+                    
+                    do {
+                        // Nueva posición X progresando hacia la derecha
+                        const xProgress = (i / numPlatforms) * canvas.width * 0.6;
+                        const xRandom = Math.random() * 100;
+                        const newX = Math.min(canvas.width * 0.15 + xProgress + xRandom, canvas.width - 120);
+                        
+                        // Nueva altura: dentro del rango de salto desde la última plataforma
+                        const maxY = Math.min(lastPlatform.y + maxJumpHeight * 0.5, groundY - 80);
+                        const minY = Math.max(lastPlatform.y - maxJumpHeight * 0.7, canvas.height * 0.2);
+                        const newY = minY + Math.random() * (maxY - minY);
+                        
+                        newPlatform = {
+                            x: newX,
+                            y: newY,
+                            width: 80 + Math.random() * 40,
+                            height: 20
+                        };
+                        
+                        attempts++;
+                    } while (attempts < 20 && Math.abs(newPlatform.x - lastPlatform.x) < minPlatformGap);
+                    
+                    platforms.push(newPlatform);
+                    lastPlatform = newPlatform;
                 }
             }
         }
@@ -634,80 +1174,234 @@
         function spawnCrowns() {
             crowns = [];
             const crownCount = Math.min(3 + level, 8);
-            const availablePlatforms = platforms.filter(p => p.y < 540);
+            const availablePlatforms = platforms.filter(p => p.y < canvas.height - 60);
             
             for (let i = 0; i < Math.min(crownCount, availablePlatforms.length); i++) {
                 const platform = availablePlatforms[i % availablePlatforms.length];
                 const offsetX = (i % 2) * (platform.width / 2) + platform.width / 4;
                 
-                let num1, num2, operation;
-                if (selectedMode === 'suma') {
-                    operation = '+';
-                    num1 = Math.floor(Math.random() * maxNumber) + 1;
-                    num2 = Math.floor(Math.random() * maxNumber) + 1;
-                } else if (selectedMode === 'resta') {
-                    operation = '-';
-                    num1 = Math.floor(Math.random() * maxNumber) + 1;
-                    num2 = Math.floor(Math.random() * num1) + 1;
-                } else {
-                    operation = Math.random() > 0.5 ? '+' : '-';
-                    num1 = Math.floor(Math.random() * maxNumber) + 1;
-                    num2 = operation === '-' ? Math.floor(Math.random() * num1) + 1 : Math.floor(Math.random() * maxNumber) + 1;
-                }
-                
+                const { num1, num2, operation } = generateNumbers();
                 crowns.push({
-                    x: platform.x + offsetX, y: platform.y - 35,
-                    width: 30, height: 30, collected: false,
-                    num1, num2, operation
+                    x: platform.x + offsetX,
+                    y: platform.y - 40,
+                    width: 30,
+                    height: 30,
+                    num1, num2, operation,
+                    collected: false
                 });
             }
         }
 
-        function spawnMonsters() {
-            monsters = [];
-            const monsterCount = Math.min(Math.ceil(level / 2), 3);
-            const groundPlatforms = platforms.filter(p => p.y > 300 && p.y < 540);
+        function spawnFallingMonster() {
+            if (isPaused || !gameRunning) return;
             
-            if (groundPlatforms.length === 0) return;
+            const maxMonsters = selectedDifficulty === 'facil' ? 2 : selectedDifficulty === 'medio' ? 3 : 4;
+            if (monsters.length >= maxMonsters) return;
             
-            for (let i = 0; i < monsterCount; i++) {
-                const platform = groundPlatforms[i % groundPlatforms.length];
-                
-                let monsterType = 'normal';
-                let speed = 0.8 + level * 0.15;
-                let color = '#8B008B';
-                
-                if (level >= 4 && i % 3 === 0) {
-                    monsterType = 'fast';
-                    speed *= 1.5;
-                    color = '#FF4500';
-                }
-                
-                let monsterX = platform.x + 10;
-                let bestDist = 0;
-                
-                for (let attempt = 0; attempt < 30; attempt++) {
-                    const testX = platform.x + Math.random() * (platform.width - 35);
-                    let minDist = Infinity;
-                    
-                    for (const crown of crowns) {
-                        const dist = Math.sqrt(Math.pow(testX - crown.x, 2) + Math.pow(platform.y - 35 - crown.y, 2));
-                        minDist = Math.min(minDist, dist);
-                    }
-                    
-                    if (minDist > bestDist) {
-                        monsterX = testX;
-                        bestDist = minDist;
+            let monsterType = 'normal';
+            let speed = 1.5 + level * 0.2;
+            let color = '#8B008B';
+            
+            if (level >= 4 && Math.random() < 0.3) {
+                monsterType = 'fast';
+                speed *= 1.5;
+                color = '#FF4500';
+            }
+            
+            const monsterX = Math.random() * (canvas.width - 100) + 50;
+            
+            let tooClose = false;
+            for (const crown of crowns) {
+                if (!crown.collected) {
+                    const dist = Math.abs(monsterX - crown.x);
+                    if (dist < 80) {
+                        tooClose = true;
+                        break;
                     }
                 }
-                
+            }
+            
+            if (!tooClose) {
                 monsters.push({
-                    x: monsterX, y: platform.y - 35,
-                    width: 35, height: 35, speed, direction: i % 2 === 0 ? 1 : -1,
-                    startX: monsterX, range: platform.width - 35,
-                    type: monsterType, color
+                    x: monsterX,
+                    y: -35,
+                    width: 35,
+                    height: 35,
+                    speed: speed,
+                    type: monsterType,
+                    color: color,
+                    falling: true
                 });
             }
+        }
+
+        function updateMonsters() {
+            if (isPaused) return;
+            
+            monsterSpawnTimer++;
+            const spawnInterval = selectedDifficulty === 'facil' ? 240 : (Math.max(120 - level * 10, 60));
+            
+            if (monsterSpawnTimer >= spawnInterval) {
+                spawnFallingMonster();
+                monsterSpawnTimer = 0;
+            }
+            
+            for (let i = monsters.length - 1; i >= 0; i--) {
+                const monster = monsters[i];
+                
+                if (monster.falling) {
+                    monster.y += monster.speed;
+                    
+                    const groundY = canvas.height - 50 - monster.height;
+                    if (monster.y >= groundY) {
+                        monsters.splice(i, 1);
+                        continue;
+                    }
+                }
+                
+                if (monster.y > canvas.height + 50) {
+                    monsters.splice(i, 1);
+                }
+            }
+            
+            if (activePowerUps.umbrellaTime > 0) {
+                activePowerUps.umbrellaTime--;
+                updateActivePowerUps();
+            }
+        }
+
+        function spawnWitch() {
+            if (witchSpawned || witch) return;
+            
+            const collectedCount = crowns.filter(c => c.collected).length;
+            const totalCrowns = crowns.length;
+            
+            if (collectedCount >= Math.ceil(totalCrowns / 2)) {
+                witchSpawned = true;
+                playWitchSound();
+                
+                // CORREGIDO: Altura variable según la acción de juego
+                // Buscar la altura promedio de las coronas no recogidas
+                const uncollectedCrowns = crowns.filter(c => !c.collected);
+                let avgY = canvas.height * 0.5;
+                
+                if (uncollectedCrowns.length > 0) {
+                    avgY = uncollectedCrowns.reduce((sum, c) => sum + c.y, 0) / uncollectedCrowns.length;
+                }
+                
+                witch = {
+                    x: canvas.width + 80,
+                    y: avgY - 40, // Altura variable
+                    width: 80, // Más grande
+                    height: 80, // Más grande
+                    speed: 1.8, // Más lenta
+                    active: true
+                };
+            }
+        }
+
+        function updateWitch() {
+            if (!witch || !witch.active) return;
+            
+            witch.x -= witch.speed;
+            
+            if (witch.x < -100) {
+                witch = null;
+                return;
+            }
+            
+            if (!invincible && 
+                player.x + player.width > witch.x && 
+                player.x < witch.x + witch.width &&
+                player.y + player.height > witch.y && 
+                player.y < witch.y + witch.height) {
+                hitByWitch();
+            }
+        }
+
+        function hitByWitch() {
+            if (activePowerUps.umbrellaTime > 0) {
+                playSuccessSound();
+                witch = null;
+                return;
+            }
+            
+            if (activePowerUps.helmetHits > 0) {
+                activePowerUps.helmetHits--;
+                updateActivePowerUps();
+                playSuccessSound();
+                witch = null;
+                return;
+            }
+            
+            const crownsLost = Math.min(score, 5);
+            score -= crownsLost;
+            document.getElementById('score').textContent = `👑 Coronas: ${score}`;
+            updateShopButton();
+            playErrorSound();
+            witch = null;
+            showNotification(`¡La bruja te quitó ${crownsLost} coronas!`);
+        }
+
+        function drawWitch() {
+            if (!witch || !witch.active) return;
+            
+            ctx.save();
+            
+            const scale = witch.width / 50; // Escala proporcional
+            
+            // Escoba
+            ctx.fillStyle = '#8B4513';
+            ctx.fillRect(witch.x + 15 * scale, witch.y + 55 * scale, 45 * scale, 4 * scale);
+            ctx.fillStyle = '#DAA520';
+            for (let i = 0; i < 8; i++) {
+                ctx.fillRect(witch.x + (55 + i * 4) * scale, witch.y + 52 * scale, 3 * scale, 10 * scale);
+            }
+            
+            // Cuerpo de la bruja
+            ctx.fillStyle = '#000';
+            ctx.fillRect(witch.x + 22 * scale, witch.y + 32 * scale, 30 * scale, 23 * scale);
+            
+            // Cabeza
+            ctx.fillStyle = '#90EE90';
+            ctx.beginPath();
+            ctx.arc(witch.x + 37 * scale, witch.y + 23 * scale, 15 * scale, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Sombrero puntiagudo
+            ctx.fillStyle = '#000';
+            ctx.beginPath();
+            ctx.moveTo(witch.x + 37 * scale, witch.y + 3 * scale);
+            ctx.lineTo(witch.x + 22 * scale, witch.y + 15 * scale);
+            ctx.lineTo(witch.x + 52 * scale, witch.y + 15 * scale);
+            ctx.fill();
+            
+            // Ala del sombrero
+            ctx.fillRect(witch.x + 17 * scale, witch.y + 15 * scale, 40 * scale, 3 * scale);
+            
+            // Ojos malvados
+            ctx.fillStyle = '#FF0000';
+            ctx.beginPath();
+            ctx.arc(witch.x + 30 * scale, witch.y + 23 * scale, 3 * scale, 0, Math.PI * 2);
+            ctx.arc(witch.x + 44 * scale, witch.y + 23 * scale, 3 * scale, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Nariz larga
+            ctx.fillStyle = '#90EE90';
+            ctx.beginPath();
+            ctx.moveTo(witch.x + 33 * scale, witch.y + 27 * scale);
+            ctx.lineTo(witch.x + 27 * scale, witch.y + 33 * scale);
+            ctx.lineTo(witch.x + 36 * scale, witch.y + 30 * scale);
+            ctx.fill();
+            
+            // Sonrisa malvada
+            ctx.strokeStyle = '#000';
+            ctx.lineWidth = 2 * scale;
+            ctx.beginPath();
+            ctx.arc(witch.x + 37 * scale, witch.y + 30 * scale, 6 * scale, 0, Math.PI);
+            ctx.stroke();
+            
+            ctx.restore();
         }
 
         function drawPlayer() {
@@ -721,28 +1415,44 @@
             ctx.fillStyle = '#FFD700';
             ctx.fillRect(player.x, player.y + 22, 5, 12);
             ctx.fillRect(player.x + 35, player.y + 22, 5, 12);
+            
             ctx.fillStyle = '#FFD4A3';
             ctx.beginPath();
             ctx.arc(player.x + 20, player.y + 12, 12, 0, Math.PI * 2);
             ctx.fill();
+            
             ctx.fillStyle = '#4B2E1F';
             ctx.beginPath();
             ctx.arc(player.x + 14, player.y + 5, 8, 0, Math.PI * 2);
             ctx.arc(player.x + 20, player.y + 3, 8, 0, Math.PI * 2);
             ctx.arc(player.x + 26, player.y + 5, 8, 0, Math.PI * 2);
             ctx.fill();
+            
             ctx.fillStyle = '#000';
             ctx.beginPath();
             ctx.arc(player.x + 16, player.y + 10, 2, 0, Math.PI * 2);
             ctx.arc(player.x + 24, player.y + 10, 2, 0, Math.PI * 2);
             ctx.fill();
+            
             ctx.beginPath();
             ctx.arc(player.x + 20, player.y + 13, 5, 0, Math.PI);
             ctx.strokeStyle = '#000';
             ctx.lineWidth = 1.5;
             ctx.stroke();
+            
             ctx.font = '16px Arial';
             ctx.fillText('👑', player.x + 12, player.y - 2);
+            
+            if (activePowerUps.helmetHits > 0) {
+                ctx.font = '20px Arial';
+                ctx.fillText('⛑️', player.x + 10, player.y - 8);
+            }
+            
+            if (activePowerUps.umbrellaTime > 0) {
+                ctx.font = '24px Arial';
+                ctx.fillText('☂️', player.x + 25, player.y - 5);
+            }
+            
             ctx.globalAlpha = 1;
         }
 
@@ -780,15 +1490,14 @@
                     ctx.lineTo(monster.x + i * 9 + 9, monster.y + 25);
                     ctx.fill();
                 }
-            });
-        }
-
-        function updateMonsters() {
-            if (isPaused) return;
-            monsters.forEach(monster => {
-                monster.x += monster.speed * monster.direction;
-                if (monster.x > monster.startX + monster.range || monster.x < monster.startX) {
-                    monster.direction *= -1;
+                
+                if (monster.falling) {
+                    ctx.fillStyle = 'rgba(255, 0, 0, 0.4)';
+                    ctx.beginPath();
+                    ctx.moveTo(monster.x + monster.width/2 - 5, monster.y + monster.height);
+                    ctx.lineTo(monster.x + monster.width/2, monster.y + monster.height + 8);
+                    ctx.lineTo(monster.x + monster.width/2 + 5, monster.y + monster.height);
+                    ctx.fill();
                 }
             });
         }
@@ -879,9 +1588,24 @@
                     }
                 });
             }
+            
+            spawnWitch();
+            updateWitch();
         }
 
         function hitByMonster() {
+            if (activePowerUps.umbrellaTime > 0) {
+                playSuccessSound();
+                return;
+            }
+            
+            if (activePowerUps.helmetHits > 0) {
+                activePowerUps.helmetHits--;
+                updateActivePowerUps();
+                playSuccessSound();
+                return;
+            }
+            
             lives--;
             playErrorSound();
             document.getElementById('lives').textContent = `❤️ Vidas: ${lives}`;
@@ -924,6 +1648,7 @@
                 feedback.className = 'correct';
                 score++;
                 document.getElementById('score').textContent = `👑 Coronas: ${score}`;
+                updateShopButton();
                 
                 setTimeout(() => {
                     hideQuestion();
@@ -956,7 +1681,10 @@
             document.getElementById('jokeBox').classList.remove('show');
             isPaused = false;
             spawnLevel();
-            player.x = 50; player.y = 450; player.velocityY = 0; player.velocityX = 0;
+            player.x = 50; 
+            player.y = canvas.height - 100; 
+            player.velocityY = 0; 
+            player.velocityX = 0;
         });
 
         function nextLevel() {
@@ -995,6 +1723,11 @@
             gameRunning = true; gameStarted = false;
             invincible = false; invincibleTimer = 0;
             selectedMode = null; selectedDifficulty = null;
+            usedNumbers.clear();
+            powerUpInventory = { helmet: 0, umbrella: 0, whistle: 0 };
+            activePowerUps = { helmetHits: 0, umbrellaTime: 0 };
+            updateActivePowerUps();
+            updatePowerUpButtons();
             
             document.getElementById('score').textContent = '👑 Coronas: 0';
             document.getElementById('lives').textContent = '❤️ Vidas: 3';
@@ -1004,10 +1737,14 @@
             document.getElementById('tableMenu').classList.remove('hidden');
             document.getElementById('instructions').classList.remove('hidden');
             document.getElementById('startGameBtn').disabled = true;
+            updateShopButton();
             
             document.querySelectorAll('.table-btn, .difficulty-btn').forEach(b => b.classList.remove('selected'));
             
-            player.x = 50; player.y = 450; player.velocityY = 0; player.velocityX = 0;
+            player.x = 50; 
+            player.y = canvas.height - 100; 
+            player.velocityY = 0; 
+            player.velocityX = 0;
         }
 
         function gameLoop() {
@@ -1016,6 +1753,7 @@
                 drawClouds();
                 drawPlatforms();
                 drawCrowns();
+                drawWitch();
                 drawMonsters();
                 updateMonsters();
                 updatePlayer();
@@ -1024,7 +1762,6 @@
             requestAnimationFrame(gameLoop);
         }
 
-        // Event listeners
         document.addEventListener('keydown', (e) => {
             if (!gameStarted) return;
             keys[e.key] = true;
