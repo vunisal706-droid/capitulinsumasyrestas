@@ -206,8 +206,9 @@
         /* Botón de reiniciar partida */
         #resetGameBtn {
             position: absolute;
-            bottom: 10px;
-            left: 10px;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-105%);
             background: linear-gradient(135deg, #FF6347, #FF4500);
             padding: 10px 20px;
             border-radius: 10px;
@@ -222,14 +223,15 @@
             text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
         }
 
-        #resetGameBtn:hover { transform: scale(1.05); }
-        #resetGameBtn:active { transform: scale(0.95); }
+        #resetGameBtn:hover { transform: translateX(-105%) scale(1.05); }
+        #resetGameBtn:active { transform: translateX(-105%) scale(0.95); }
 
         /* PWA Install Button */
         #installBtn {
             position: absolute;
-            bottom: 10px;
-            right: 10px;
+            top: 10px;
+            left: 50%;
+            transform: translateX(5%);
             background: linear-gradient(135deg, #4CAF50, #45a049);
             padding: 10px 20px;
             border-radius: 10px;
@@ -246,8 +248,8 @@
         }
 
         #installBtn.show { display: block; }
-        #installBtn:hover { transform: scale(1.05); }
-        #installBtn:active { transform: scale(0.95); }
+        #installBtn:hover { transform: translateX(5%) scale(1.05); }
+        #installBtn:active { transform: translateX(5%) scale(0.95); }
 
         #shopMenu {
             position: absolute;
@@ -262,9 +264,18 @@
             display: none;
             z-index: 2500;
             border: 4px solid #FF8C00;
-            max-width: 90vw;
-            max-height: 90vh;
+            max-width: 92vw;
+            max-height: 94vh;
             overflow-y: auto;
+            touch-action: pan-y;
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior: contain;
+        }
+
+        @media (max-height: 520px) {
+            #shopMenu { padding: 12px; }
+            #shopMenu h2 { font-size: 16px; }
+            .shop-items { gap: 8px; }
         }
 
         #shopMenu.show { display: block; }
@@ -356,9 +367,30 @@
             text-align: center;
             z-index: 2000;
             border: 4px solid #FFD700;
-            max-width: 90vw;
-            max-height: 90vh;
+            max-width: 92vw;
+            max-height: 94vh;
             overflow-y: auto;
+            touch-action: pan-y;
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior: contain;
+        }
+
+        /* Movil en horizontal: poca altura, menu compacto para que quepa el boton Comenzar */
+        @media (max-height: 520px) {
+            #tableMenu {
+                padding: 10px 14px;
+                border-width: 3px;
+                max-width: 96vw;
+            }
+            #tableMenu h2 { font-size: 16px !important; margin-bottom: 4px; }
+            #tableMenu p { font-size: 12px; margin-bottom: 8px; }
+            .table-buttons { grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 8px; }
+            .table-btn, .difficulty-btn { padding: 8px 6px; font-size: 13px; }
+            .difficulty-section { margin-top: 8px; padding-top: 8px; }
+            .difficulty-section h3 { font-size: 14px; margin-bottom: 6px; }
+            .difficulty-buttons { gap: 6px; }
+            #startGameBtn { padding: 10px; font-size: 16px; margin-top: 8px; }
+            #instructions { display: none; }
         }
 
         #tableMenu.hidden { display: none; }
