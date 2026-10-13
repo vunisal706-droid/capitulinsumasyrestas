@@ -1,4 +1,4 @@
-const CACHE_NAME = 'capitulin-sumas-v1-b2610102004';
+const CACHE_NAME = 'capitulin-sumas-v1-b2610131841';
 const urlsToCache = [
   './index.html',
   './manifest-sumas.json'
